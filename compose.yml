@@ -1,6 +1,7 @@
 services:
   fullfeedrss:
-    image: "heussd/fivefilters-full-text-rss:latest"
+    build: .
+    image: fivefilters-full-text-rss:latest
     mem_limit: 2G
     restart: always
     environment:
@@ -10,6 +11,6 @@ services:
       - "rss-cache:/var/www/html/cache/rss"
       - "./custom:/var/www/html/site_config/custom"
     ports:
-      - "80:80"
+      - "8080:80"
 volumes:
   rss-cache:

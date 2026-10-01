@@ -18,7 +18,8 @@ The Docker image includes [site-specific article extraction rules](https://githu
 ```yaml
 services:
   fullfeedrss:
-    image: "heussd/fivefilters-full-text-rss:latest"
+    build: .
+    image: fivefilters-full-text-rss:latest
     mem_limit: 2G
     restart: always
     environment:
@@ -28,17 +29,17 @@ services:
       - "rss-cache:/var/www/html/cache/rss"
       - "./custom:/var/www/html/site_config/custom"
     ports:
-      - "80:80"
+      - "8080:80"
 volumes:
   rss-cache:
 ```
 
-- Start it with `docker compose up`
-- Visit [http://localhost:80](http://localhost:80) for the integrated web UI
+- Start it with `docker compose up -d --build` (the first start builds the image)
+- Visit [http://localhost:8080](http://localhost:8080) for the integrated web UI
 
 ![](webui.png)
 
-- Interesting endpoints (see tab [Request & Response](http://localhost/#request)):
-  - Article extraction: `http://localhost/extract.php?url=[url]`
-  - Feed conversion: `http://localhost/makefulltextfeed.php?url=[url]`
+- Interesting endpoints (see tab [Request & Response](http://localhost:8080/#request)):
+  - Article extraction: `http://localhost:8080/extract.php?url=[url]`
+  - Feed conversion: `http://localhost:8080/makefulltextfeed.php?url=[url]`
 - See [calls.http](calls.http) for example calls

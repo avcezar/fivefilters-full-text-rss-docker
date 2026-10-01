@@ -4,8 +4,11 @@
 
 FROM	alpine/git AS gitsrc
 WORKDIR /ftr
-RUN	git clone https://bitbucket.org/fivefilters/full-text-rss.git . && \
-		git reset --hard 384d52fd83361ffd6e7f28bd39b322970a015a28
+# Bitbucket Full-Text RSS 3.8 only runs on PHP 5. That stack's OpenSSL
+# cannot negotiate TLS with current sites. This fork is 3.8.2 with the
+# HTTP client and HTML libraries updated for PHP 8.
+RUN	git clone https://github.com/Art4/full-text-rss.git . && \
+		git reset --hard 66843d0accd0d68bd01873e82616bcafde20bb6a
 
 
 FROM	alpine/git AS gitconfig
@@ -13,16 +16,12 @@ WORKDIR	/ftr-site-config
 RUN	git clone https://github.com/fivefilters/ftr-site-config . 
 
 
-# Do not upgrade. More recent versions of PHP are seg faulting. 
-FROM	php:5-apache
-
-# https://unix.stackexchange.com/questions/371890/debian-the-repository-does-not-have-a-release-file#answer-743863
-RUN 	echo "deb http://archive.debian.org/debian stretch main contrib non-free" > /etc/apt/sources.list
+# Bookworm's OpenSSL 3 speaks TLS 1.2 and 1.3.
+FROM	php:8.3-apache-bookworm
 
 RUN   apt-get update && \
       apt-get install \
-      	-y --allow-unauthenticated \
-      	--no-install-recommends \
+      	-y --no-install-recommends \
       libtidy-dev \
       && rm -rf /var/lib/apt/lists/*
 
@@ -39,4 +38,9 @@ RUN		mkdir -p /var/www/html/cache/rss && \
 VOLUME	/var/www/html/cache
 
 COPY	custom_config.php /var/www/html/
+COPY	docker/php8-compat.sh /tmp/php8-compat.sh
+RUN	sh /tmp/php8-compat.sh && rm /tmp/php8-compat.sh
+
+# Keep deprecation warnings out of feed and JSON bodies.
+RUN	mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
