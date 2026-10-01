@@ -1,5 +1,5 @@
 variable "IMAGE" {
-	default = "heussd/fivefilters-full-text-rss"
+	default = "fivefilters-full-text-rss"
 }
 
 group "default" {
