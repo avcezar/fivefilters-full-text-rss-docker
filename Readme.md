@@ -28,6 +28,9 @@ services:
     volumes:
       - "rss-cache:/var/www/html/cache/rss"
       - "./custom:/var/www/html/site_config/custom"
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     ports:
       - "8080:80"
 volumes:

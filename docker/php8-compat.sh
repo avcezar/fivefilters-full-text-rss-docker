@@ -25,6 +25,32 @@ sed -i -E \
   's/\$([A-Za-z_][A-Za-z0-9_]*)\{([^}]+)\}/$\1[\2]/g' \
   "$html/libraries/language-detect/LanguageDetect.php"
 
+# Linux Docker often resolves a site to IPv6 and then cannot connect.
+# Docker Desktop on a Mac does not. Prefer IPv4 for every outbound fetch.
+php << 'PHP'
+<?php
+$files = array(
+  '/var/www/html/libraries/humble-http-agent/RollingCurl.php',
+  '/var/www/html/libraries/humble-http-agent/HumbleHttpAgent.php',
+);
+foreach ($files as $path) {
+  $src = file_get_contents($path);
+  $count = 0;
+  $updated = preg_replace(
+    '/CURLOPT_TIMEOUT => (30|\$this->requestOptions\[\'timeout\'\])/',
+    '$0, CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4',
+    $src,
+    -1,
+    $count
+  );
+  if ($count < 1) {
+    fwrite(STDERR, "IPv4 patch missed $path\n");
+    exit(1);
+  }
+  file_put_contents($path, $updated);
+}
+PHP
+
 # Counts are stored on $_trigram, which was never declared. PHP 8.2 warns.
 sed -i 's/protected \$_trigrams = array();/protected $_trigrams = array();\
     protected $_trigram = array();/' \

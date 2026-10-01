@@ -10,6 +10,11 @@ services:
     volumes:
       - "rss-cache:/var/www/html/cache/rss"
       - "./custom:/var/www/html/site_config/custom"
+    # Public resolvers, and the image fetches over IPv4. A Linux server
+    # often has working host DNS but a container that tries IPv6 and fails.
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     ports:
       - "8080:80"
 volumes:
